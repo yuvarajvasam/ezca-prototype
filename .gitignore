@@ -1,8 +1,59 @@
+# Dependencies
 node_modules/
-build/
+.pnpm-store/
+
+# Production & Build output
 dist/
-coverage/
-.DS_Store
-*.log
+dist-ssr/
+build/
+out/
+*.tsbuildinfo
+
+# Environment variables & local secrets
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env*.local
 .env*
 !.env.example
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# IDE & Editor files
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Operating System & System files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Temporary & Caches
+.cache/
+.vite/
+.eslintcache
+.stylelintcache
+*.tmp
+tmp/
