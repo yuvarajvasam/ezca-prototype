@@ -31,10 +31,7 @@ interface HeaderNavbarProps {
   onLogout?: () => void;
 }
 
-const defaultUsers: User[] = [
-  { id: 'user-ca-admin', tenantId: 't1', mobile: '+91 98200 12345', email: 'ca.kothari@kotharitax.in', name: 'CA Rajesh Kothari', role: 'CA_ADMIN' },
-  { id: 'user-client-1', tenantId: 't1', mobile: '+91 98765 43210', email: 'yuvaraj.vasam@example.com', name: 'Yuvaraj Vasam', role: 'CLIENT' },
-];
+import { defaultUsers } from '../data/mockData';
 
 export const HeaderNavbar: React.FC<HeaderNavbarProps> = ({
   tenant,
@@ -53,7 +50,8 @@ export const HeaderNavbar: React.FC<HeaderNavbarProps> = ({
 }) => {
   const [showUserMenu, setShowUserMenu] = useState(false);
   const effectiveRole = activeRole || (currentUser?.role === 'CLIENT' ? 'client' : 'admin');
-  const user = currentUser || (effectiveRole === 'client' ? defaultUsers[2] : defaultUsers[0]);
+  const fallbackClientUser = defaultUsers.find((u) => u.role === 'CLIENT') || defaultUsers[1] || defaultUsers[0];
+  const user = currentUser || (effectiveRole === 'client' ? fallbackClientUser : defaultUsers[0]);
 
   const handleSwitchToAdmin = (tabName: string = 'dashboard') => {
     if (onSwitchRole) onSwitchRole('admin');
@@ -68,7 +66,7 @@ export const HeaderNavbar: React.FC<HeaderNavbarProps> = ({
     if (onSwitchRole) onSwitchRole('client');
     if (setActiveTab) setActiveTab('client_app');
     if (onSelectUser) {
-      const clientUser = allUsers.find((u) => u.role === 'CLIENT') || defaultUsers[2];
+      const clientUser = allUsers.find((u) => u.role === 'CLIENT') || fallbackClientUser;
       onSelectUser(clientUser.id);
     }
   };

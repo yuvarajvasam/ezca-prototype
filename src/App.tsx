@@ -14,6 +14,21 @@ import {
   ChatMessage,
   User,
 } from './types';
+import {
+  defaultTenant,
+  defaultFeatureFlags,
+  defaultUsers,
+  defaultClients,
+  defaultCategories,
+  defaultFilings,
+  defaultRequirements,
+  defaultPayments,
+  defaultNotifications,
+  defaultAuditLogs,
+  defaultDownloadEvents,
+  defaultStaffMembers,
+  defaultChatMessages,
+} from './data/mockData';
 
 import { HeaderNavbar } from './components/HeaderNavbar';
 import { AdminSidebar } from './components/admin/AdminSidebar';
@@ -128,44 +143,25 @@ export const App: React.FC = () => {
   // Loading state
   const [isLoading, setIsLoading] = useState(true);
 
-  // Helper for resilient fetch calls
+  // Helper for resilient fetch calls (handles HTML 404 fallback responses on static hosts like Vercel)
   const safeFetchJson = async <T,>(url: string, fallback: T): Promise<T> => {
     try {
       const res = await fetch(url);
       if (!res.ok) return fallback;
-      const data = await res.json();
+      const text = await res.text();
+      if (!text || text.trim().startsWith('<') || text.includes('<!DOCTYPE html>')) {
+        return fallback;
+      }
+      const data = JSON.parse(text);
       return data ?? fallback;
     } catch {
       return fallback;
     }
   };
 
-  // Load All System Data from Express Backend
+  // Load All System Data from Express Backend or Local Fallbacks
   const loadInitialData = async () => {
     try {
-      const defaultTenant: Tenant = {
-        id: 'tenant-kothari-01',
-        brandName: 'Kothari & Associates Tax Vault',
-        logoUrl: 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=150&auto=format&fit=crop&q=80',
-        primaryColor: '#1e3a8a',
-        secondaryColor: '#0d9488',
-        supportPhone: '+91 98200 12345',
-        supportEmail: 'support@kotharitax.in',
-      };
-
-      const defaultFeatureFlags: FeatureFlags = {
-        PAYMENTS: true,
-        PAN_DOB_VERIFICATION: true,
-        PUSH_NOTIFICATIONS: true,
-        AI_OCR: false,
-        DOCUMENT_CLASSIFICATION: false,
-        TAX_RULES: false,
-        ITD_ERI: false,
-        ITD_PREFILL: false,
-        ITD_SUBMISSION: false,
-        WHATSAPP: false,
-      };
-
       const [
         tRes,
         uRes,
@@ -181,53 +177,39 @@ export const App: React.FC = () => {
         chatRes,
       ] = await Promise.all([
         safeFetchJson('/api/tenant', defaultTenant),
-        safeFetchJson('/api/users', []),
-        safeFetchJson('/api/clients', []),
-        safeFetchJson('/api/filings', []),
-        safeFetchJson('/api/documents/requirements', []),
-        safeFetchJson('/api/payments', []),
-        safeFetchJson('/api/audit', []),
-        safeFetchJson('/api/download-events', []),
-        safeFetchJson('/api/staff', []),
+        safeFetchJson('/api/users', defaultUsers),
+        safeFetchJson('/api/clients', defaultClients),
+        safeFetchJson('/api/filings', defaultFilings),
+        safeFetchJson('/api/documents/requirements', defaultRequirements),
+        safeFetchJson('/api/payments', defaultPayments),
+        safeFetchJson('/api/audit', defaultAuditLogs),
+        safeFetchJson('/api/download-events', defaultDownloadEvents),
+        safeFetchJson('/api/staff', defaultStaffMembers),
         safeFetchJson('/api/feature-flags', defaultFeatureFlags),
-        safeFetchJson('/api/categories', []),
-        safeFetchJson('/api/chat', []),
+        safeFetchJson('/api/categories', defaultCategories),
+        safeFetchJson('/api/chat', defaultChatMessages),
       ]);
 
       setTenant(tRes);
-      setAllUsers(Array.isArray(uRes) ? uRes : []);
-      setClients(Array.isArray(cRes) ? cRes : []);
-      setFilings(Array.isArray(fRes) ? fRes : []);
-      setRequirements(Array.isArray(rRes) ? rRes : []);
-      setPayments(Array.isArray(pRes) ? pRes : []);
-      setAuditLogs(Array.isArray(aRes) ? aRes : []);
-      setDownloadEvents(Array.isArray(dlRes) ? dlRes : []);
-      setStaffList(Array.isArray(sRes) ? sRes : []);
+      setAllUsers(Array.isArray(uRes) && uRes.length > 0 ? uRes : defaultUsers);
+      setClients(Array.isArray(cRes) && cRes.length > 0 ? cRes : defaultClients);
+      setFilings(Array.isArray(fRes) && fRes.length > 0 ? fRes : defaultFilings);
+      setRequirements(Array.isArray(rRes) && rRes.length > 0 ? rRes : defaultRequirements);
+      setPayments(Array.isArray(pRes) && pRes.length > 0 ? pRes : defaultPayments);
+      setAuditLogs(Array.isArray(aRes) && aRes.length > 0 ? aRes : defaultAuditLogs);
+      setDownloadEvents(Array.isArray(dlRes) && dlRes.length > 0 ? dlRes : defaultDownloadEvents);
+      setStaffList(Array.isArray(sRes) && sRes.length > 0 ? sRes : defaultStaffMembers);
       setFeatureFlags(ffRes);
-      setCategories(Array.isArray(catRes) ? catRes : []);
-      setChatMessages(Array.isArray(chatRes) ? chatRes : []);
+      setCategories(Array.isArray(catRes) && catRes.length > 0 ? catRes : defaultCategories);
+      setChatMessages(Array.isArray(chatRes) && chatRes.length > 0 ? chatRes : defaultChatMessages);
 
-      if (Array.isArray(fRes) && fRes.length > 0 && !selectedFilingId) {
-        setSelectedFilingId(fRes[0].id);
+      const activeFilingsList = Array.isArray(fRes) && fRes.length > 0 ? fRes : defaultFilings;
+      if (activeFilingsList.length > 0 && !selectedFilingId) {
+        setSelectedFilingId(activeFilingsList[0].id);
       }
 
       // Default client notifications simulation
-      setNotifications([
-        {
-          id: 'n-1',
-          title: 'Document Verified by CA',
-          message: 'Your Form 16 Part A & B has been reviewed and approved by Kothari & Co.',
-          read: false,
-          createdAt: new Date().toISOString(),
-        },
-        {
-          id: 'n-2',
-          title: 'Filing In Progress',
-          message: 'Your CA team has initiated tax computation for Assessment Year 2026-27.',
-          read: false,
-          createdAt: new Date().toISOString(),
-        },
-      ]);
+      setNotifications(defaultNotifications);
     } catch (err) {
       console.warn('Initial data load notice:', err);
     } finally {
@@ -255,12 +237,13 @@ export const App: React.FC = () => {
       if (clientObj) {
         setSelectedClientId(clientObj.id);
       } else {
-        const found = clients.find(
+        const clientList = clients.length > 0 ? clients : defaultClients;
+        const found = clientList.find(
           (c) =>
             (c.email && user.email && c.email.toLowerCase() === user.email.toLowerCase()) ||
             (c.mobile && user.mobile && c.mobile === user.mobile)
         );
-        if (found) setSelectedClientId(found.id);
+        setSelectedClientId(found ? found.id : 'client-1');
       }
     } else {
       setActivePortalRole('admin');
