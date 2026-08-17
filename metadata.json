@@ -1,0 +1,6 @@
+{
+  "name": "ezca — CA–Client Tax Operations Platform",
+  "description": "Secure CA–Client tax operations platform featuring structured document collection, CA dashboard, controlled filing state machine, payment-gated document vault with PAN+DOB verification, audit logs, and multi-role access control.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
